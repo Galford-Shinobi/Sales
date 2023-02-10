@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Sales.Shared.Applications.Interfaces;
 using Sales.Shared.DataBase;
 using Sales.Shared.Entities;
 
@@ -8,10 +9,12 @@ namespace Sales.API.Controllers
     public class CountriesController : BaseApiController
     {
         private readonly SalesDbContext _salesDbContext;
+        private readonly ICountriesRepository _countriesRepository;
 
-        public CountriesController(SalesDbContext salesDbContext)
+        public CountriesController(SalesDbContext salesDbContext, ICountriesRepository countriesRepository)
         {
             _salesDbContext = salesDbContext;
+            _countriesRepository = countriesRepository;
         }
 
         [HttpGet]
@@ -19,7 +22,7 @@ namespace Sales.API.Controllers
         {
             try
             {
-                return Ok(await _salesDbContext.Countries.ToListAsync());
+                return Ok(await _countriesRepository.GetAllCountryAsync());
             }
             catch (Exception)
             {
@@ -34,13 +37,16 @@ namespace Sales.API.Controllers
         {
             try
             {
-                var country = await _salesDbContext.Countries.FirstOrDefaultAsync(x => x.Id == id);
-                if (country is null)
+                var country = await _countriesRepository.GetOnlyCountryoAsync(id);
+                //if (country is null)
+                //{
+                //    return NotFound();
+                //}
+                if (!country.IsSuccess)
                 {
-                    return NotFound();
+                    return NotFound(country.ErrorMessage);
                 }
-
-                return Ok(country);
+                return Ok(country.Result);
             }
             catch (Exception)
             {

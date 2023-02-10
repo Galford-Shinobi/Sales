@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Sales.Shared.Applications.Logic;
 using Sales.Shared.DataBase;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,10 @@ builder.Services.AddDbContext<SalesDbContext>(o =>
 {
     o.UseSqlServer(builder.Configuration.GetConnectionString("DockerConnection"));
 });
+
+builder.Services.AddApplication(builder.Configuration);
+
+
 //builder.Services.AddDbContext<SalesDbContext>(x => x.UseSqlServer("DockerConnection"));
 var app = builder.Build();
 
