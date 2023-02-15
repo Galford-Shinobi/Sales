@@ -18,7 +18,11 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> Get()
+        //[ResponseCache(Duration = 20)]
+        [ResponseCache(CacheProfileName = "PorDefecto20Segundos")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetAsync()
         {
             try
             {
@@ -33,7 +37,7 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult> Get(int id)
+        public async Task<ActionResult> GetAsync(int id)
         {
             try
             {
@@ -57,10 +61,20 @@ namespace Sales.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Post(Country country)
+        [ProducesResponseType(201, Type = typeof(Country))]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> PostAsync(Country country)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 _salesDbContext.Add(country);
                 await _salesDbContext.SaveChangesAsync();
                 return Ok(country);
@@ -73,10 +87,19 @@ namespace Sales.API.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> Put(Country country)
+        [ProducesResponseType(201, Type = typeof(Country))]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> PutAsync(Country country)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
                 _salesDbContext.Update(country);
                 await _salesDbContext.SaveChangesAsync();
                 return Ok(country);
@@ -89,17 +112,32 @@ namespace Sales.API.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult> Delete(int id)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> DeleteAsync(int id)
         {
             try
             {
+                var country = await _salesDbContext
+                    .Countries.
+                    FirstOrDefaultAsync(x => x.Id.Equals(id));
+
+                if (country == null) 
+                {
+                    return NotFound();
+                }
+
                 var afectedRows = await _salesDbContext.Countries
                .Where(x => x.Id == id)
                .ExecuteDeleteAsync();
 
                 if (afectedRows == 0)
                 {
-                    return NotFound();
+                    ModelState.AddModelError("", $"Algo salió mal borrando el registro{country.Name}");
+                    return StatusCode(500, ModelState);
                 }
 
                 return NoContent();
