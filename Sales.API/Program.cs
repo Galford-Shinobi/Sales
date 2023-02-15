@@ -1,12 +1,21 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sales.Shared.Applications.Logic;
 using Sales.Shared.DataBase;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Añadimos cache
+builder.Services.AddResponseCaching();
 // Add services to the container.
 
-builder.Services.AddControllers();
+//builder.Services.AddControllers();
+// Add services to the container.
+builder.Services.AddControllers(opcion =>
+{
+    //Cache profile. Un cache global y así no tener que ponerlo en todas partes
+    opcion.CacheProfiles.Add("PorDefecto20Segundos", new CacheProfile() { Duration = 30 });
+}).AddNewtonsoftJson();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
