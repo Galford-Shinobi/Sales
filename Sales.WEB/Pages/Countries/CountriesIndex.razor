@@ -41,10 +41,10 @@
 
     protected async override Task OnInitializedAsync()
     {
-        await Load();
+        await LoadAsync();
     }
 
-    private async Task Load()
+    private async Task LoadAsync()
     {
         var responseHppt = await repository.Get<List<Country>>("api/countries");
         Countries = responseHppt.Response!;
@@ -83,7 +83,7 @@
         }
         else
         {
-            await Load();
+            await LoadAsync();
         }
     }
 }
