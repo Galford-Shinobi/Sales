@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Sales.API.DataSeeding;
 using Sales.Shared.Applications.Logic;
 using Sales.Shared.DataBase;
 
@@ -24,12 +25,26 @@ builder.Services.AddDbContext<SalesDbContext>(o =>
 {
     o.UseSqlServer(builder.Configuration.GetConnectionString("DockerConnection"));
 });
+builder.Services.AddTransient<SeedDb>();
 
 builder.Services.AddApplication(builder.Configuration);
 
 
 //builder.Services.AddDbContext<SalesDbContext>(x => x.UseSqlServer("DockerConnection"));
 var app = builder.Build();
+
+SeedData(app);
+
+void SeedData(WebApplication app)
+{
+    IServiceScopeFactory? scopedFactory = app.Services.GetService<IServiceScopeFactory>();
+
+    using (IServiceScope? scope = scopedFactory!.CreateScope())
+    {
+        SeedDb? service = scope.ServiceProvider.GetService<SeedDb>();
+        service!.SeedAsync().Wait();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
