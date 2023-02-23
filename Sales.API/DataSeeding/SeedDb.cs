@@ -16,9 +16,31 @@ namespace Sales.API.DataSeeding
         {
             await _context.Database.EnsureCreatedAsync();
             await ChecksCountriesAsync();
+            await CheckCategoriesAsync();
         }
 
-        
+        private async Task CheckCategoriesAsync()
+        {
+            if (!_context.Categories.Any())
+            {
+                //await AddCategoryAsync("Ropa");
+                //await AddCategoryAsync("Tecnología");
+                //await AddCategoryAsync("Mascotas");
+                _context.Categories.Add(new Category { Name = "Ropa" });
+                _context.Categories.Add(new Category { Name = "Tecnología" });
+                _context.Categories.Add(new Category { Name = "Mascotas" });
+               
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        //private async Task AddCategoryAsync(string name)
+        //{
+        //    string path = Path.Combine(Directory.GetCurrentDirectory(), $"wwwroot\\images", $"{name}.png");
+        //    Guid imageId = await _blobHelper.UploadBlobAsync(path, "categories");
+        //    _context.Categories.Add(new Category { Name = name, ImageId = imageId });
+        //}
+
         private async Task ChecksCountriesAsync()
         {
             if (!_context.Countries.Any())
