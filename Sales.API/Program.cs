@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Sales.API.DataSeeding;
 using Sales.Shared.Applications.Logic;
 using Sales.Shared.DataBase;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +17,7 @@ builder.Services.AddControllers(opcion =>
 {
     //Cache profile. Un cache global y así no tener que ponerlo en todas partes
     opcion.CacheProfiles.Add("PorDefecto20Segundos", new CacheProfile() { Duration = 30 });
-}).AddNewtonsoftJson();
+}).AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

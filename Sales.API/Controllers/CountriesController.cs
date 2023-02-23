@@ -72,17 +72,27 @@ namespace Sales.API.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(ModelState);
+                    return StatusCode(StatusCodes.Status400BadRequest, ModelState);
                 }
 
                 _salesDbContext.Add(country);
                 await _salesDbContext.SaveChangesAsync();
                 return Ok(country);
             }
-            catch (Exception)
+            catch (DbUpdateException dbUpdateException)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-              "Error retrieving data from the database");
+                if (dbUpdateException.InnerException!.Message.Contains("duplicate"))
+                {
+                    //return BadRequest("Ya existe un país con el mismo nombre.");
+                    return StatusCode(StatusCodes.Status400BadRequest, "Ya existe un país con el mismo nombre.");
+                }
+                return StatusCode(StatusCodes.Status400BadRequest, dbUpdateException.Message);
+                //return BadRequest(dbUpdateException.Message);
+            }
+            catch (Exception exception)
+            {
+                //return BadRequest(exception.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, exception.Message);
             }
         }
 
@@ -98,17 +108,28 @@ namespace Sales.API.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(ModelState);
+                    return StatusCode(StatusCodes.Status400BadRequest, ModelState);
                 }
                 _salesDbContext.Update(country);
                 await _salesDbContext.SaveChangesAsync();
                 return Ok(country);
             }
-            catch (Exception)
+            catch (DbUpdateException dbUpdateException)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-             "Error retrieving data from the database");
+                if (dbUpdateException.InnerException!.Message.Contains("duplicate"))
+                {
+                    //return BadRequest("Ya existe un país con el mismo nombre.");
+                    return StatusCode(StatusCodes.Status400BadRequest, "Ya existe un país con el mismo nombre.");
+                }
+                return StatusCode(StatusCodes.Status400BadRequest, dbUpdateException.Message);
+                //return BadRequest(dbUpdateException.Message);
             }
+            catch (Exception exception)
+            {
+                //return BadRequest(exception.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, exception.Message);
+            }
+
         }
 
         [HttpDelete("{id:int}")]
