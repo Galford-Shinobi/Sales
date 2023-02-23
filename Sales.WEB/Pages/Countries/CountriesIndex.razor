@@ -1,9 +1,4 @@
-﻿@*@page "/countries"
-@inject IRepository repository
-@inject NavigationManager navigationManager
-@inject SweetAlertService swal*@
-
-@page "/countries"
+﻿@page "/countries"
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
@@ -30,8 +25,8 @@
                 {
                     <tr>
                         <td>
-                            <a class="btn btn-warning" href="/countries/edit/@country.Id">Editar</a>
-                            <button class="btn btn-danger" @onclick=@(() => DeleteAsync(country.Id))>Borrar</button>
+                            <a class="btn btn-outline-warning" href="/countries/edit/@country.Id">Editar</a>
+                            <button class="btn btn-outline-danger" @onclick=@(() => DeleteAsync(country.Id))>Borrar</button>
                         </td>
                         <td>
                             @country.Name
