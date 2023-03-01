@@ -36,7 +36,7 @@ else
                             </td>
                             <td>
                                 <a class="btn btn-warning" href="/cities/edit/@city.Id">Editar</a>
-                               @* <button class="btn btn-danger" @onclick=@(() => DeleteAsync(city.Id))>Borrar</button>*@
+                                <button class="btn btn-danger" @onclick=@(() => DeleteAsync(city.Id))>Borrar</button>
                             </td>
                         </tr>
                     }
@@ -74,5 +74,36 @@ else
         }
 
         state = responseHttp.Response;
+    }
+    private async Task DeleteAsync(int CityId)
+    {
+        var result = await sweetAlertService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = "¿Realmente deseas eliminar el registro?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true,
+                CancelButtonText = "No",
+                ConfirmButtonText = "Si"
+            });
+
+        var confirm = string.IsNullOrEmpty(result.Value);
+        if (confirm)
+        {
+            return;
+        }
+
+        var responseHttp = await repository.Delete($"/api/cities/{CityId}");
+        if (responseHttp.Error)
+        {
+            if (responseHttp.HttpResponseMessage.StatusCode != HttpStatusCode.NotFound)
+            {
+                var message = await responseHttp.GetErrorMessageAsync();
+                await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+                return;
+            }
+        }
+
+        await LoadAsync();
     }
 }

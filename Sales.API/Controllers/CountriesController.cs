@@ -46,6 +46,10 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetAsync(int id)
         {
             try
