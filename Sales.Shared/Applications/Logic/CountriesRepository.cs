@@ -58,14 +58,24 @@ namespace Sales.Shared.Applications.Logic
 
         public async Task<List<Country>> GetAllCountryAsync()
         {
-            return await _salesDbContext.Countries.ToListAsync();
+            return await _salesDbContext.Countries.Include(x => x.States).ToListAsync();
+        }
+
+        public async Task<List<Country>> GetFullCountryAsync()
+        {
+            return await _salesDbContext.Countries
+               .Include(x => x.States!)
+               .ThenInclude(x => x.Cities)
+               .ToListAsync();
         }
 
         public async Task<GenericResponse<Country>> GetOnlyCountryoAsync(int id)
         {
             try
             {
-                var Only = await _salesDbContext.Countries.FirstOrDefaultAsync(c => c.Id.Equals(id));
+                var Only = await _salesDbContext.Countries
+                    .Include(x => x.States!)
+                    .ThenInclude(x => x.Cities).FirstOrDefaultAsync(c => c.Id.Equals(id));
                 if (Only == null)
                 {
                     return new GenericResponse<Country> { IsSuccess = false, Message = "No hay Datos!" };

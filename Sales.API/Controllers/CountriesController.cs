@@ -36,16 +36,22 @@ namespace Sales.API.Controllers
             
         }
 
+        [HttpGet("full")]
+        [ResponseCache(CacheProfileName = "PorDefecto20Segundos")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetFullAsync()
+        {
+            return Ok(await _countriesRepository.GetFullCountryAsync());
+        }
+
         [HttpGet("{id:int}")]
         public async Task<ActionResult> GetAsync(int id)
         {
             try
             {
                 var country = await _countriesRepository.GetOnlyCountryoAsync(id);
-                //if (country is null)
-                //{
-                //    return NotFound();
-                //}
+                
                 if (!country.IsSuccess)
                 {
                     return NotFound(country.ErrorMessage);
