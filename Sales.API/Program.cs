@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sales.API.DataSeeding;
+using Sales.API.Services;
 using Sales.Shared.Applications.Logic;
 using Sales.Shared.DataBase;
 using System.Text.Json.Serialization;
@@ -27,6 +28,7 @@ builder.Services.AddDbContext<SalesDbContext>(o =>
     o.UseSqlServer(builder.Configuration.GetConnectionString("DockerConnection"));
 });
 builder.Services.AddTransient<SeedDb>();
+builder.Services.AddScoped<IApiService, ApiService>();
 
 builder.Services.AddApplication(builder.Configuration);
 
