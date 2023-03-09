@@ -1,0 +1,65 @@
+﻿@page "/Categories/edit/{Id:int}"
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService sweetAlertService
+
+
+<h3>Editar Categoria</h3>
+
+@if (category is null)
+{
+    <p>Cargando...</p>
+    <div class="align-items-center">
+        <img src="https://i.stack.imgur.com/hzk6C.gif" />
+    </div>
+}
+else
+{
+    <CategoryForm @ref="categoryForm" Category="category" OnValidSubmit="EditAsync" ReturnAction="Return" />
+}
+
+@code {
+    private Category? category;
+    private CategoryForm? categoryForm;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var responseHttp = await repository.Get<Category>($"/api/Categories/{Id}");
+        if (responseHttp.Error)
+        {
+            if (responseHttp.HttpResponseMessage.StatusCode == HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("/Categories");
+                return;
+            }
+
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        category = responseHttp.Response;
+    }
+
+    private async Task EditAsync()
+    {
+        var responseHttp = await repository.Put("/api/Categories", category);
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        Return();
+    }
+
+    private void Return()
+    {
+        categoryForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo("/Categories");
+    }
+}

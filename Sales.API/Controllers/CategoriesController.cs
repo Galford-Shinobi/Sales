@@ -1,49 +1,56 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sales.API.Helpers;
-using Sales.Shared.Applications.Interfaces;
 using Sales.Shared.DataBase;
 using Sales.Shared.DTOs;
 using Sales.Shared.Entities;
 
 namespace Sales.API.Controllers
 {
-    public class CountriesController : BaseApiController
+
+    public class CategoriesController : BaseApiController
     {
         private readonly SalesDbContext _salesDbContext;
-        private readonly ICountriesRepository _countriesRepository;
 
-        public CountriesController(SalesDbContext salesDbContext, ICountriesRepository countriesRepository)
+        public CategoriesController(SalesDbContext salesDbContext)
         {
             _salesDbContext = salesDbContext;
-            _countriesRepository = countriesRepository;
         }
 
         [HttpGet]
+        //[ResponseCache(Duration = 20)]
         [ResponseCache(CacheProfileName = "PorDefecto20Segundos")]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
+        public async Task<ActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
-            var queryable = _salesDbContext.Countries
-                .Include(x => x.States)
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+            try
             {
-                queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+                var queryable = _salesDbContext.Categories
+                 .AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(pagination.Filter))
+                {
+                    queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+                }
+
+                return Ok(await queryable
+                    .OrderBy(x => x.Name)
+                    .Paginate(pagination)
+                    .ToListAsync());
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+               $"Error retrieving data from the database ---- {exception.InnerException!.Message}");
             }
 
-            return Ok(await queryable
-                .OrderBy(x => x.Name)
-                .Paginate(pagination)
-                .ToListAsync());
         }
 
         [HttpGet("totalPages")]
         public async Task<ActionResult> GetPages([FromQuery] PaginationDTO pagination)
         {
-            var queryable = _salesDbContext.Countries.AsQueryable();
+            var queryable = _salesDbContext.Categories.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(pagination.Filter))
             {
@@ -54,67 +61,37 @@ namespace Sales.API.Controllers
             double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
             return Ok(totalPages);
         }
-
-        //[HttpGet]
-        //[ResponseCache(Duration = 20)]
-        //[ResponseCache(CacheProfileName = "PorDefecto20Segundos")]
-        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //public async Task<ActionResult> GetAsync()
-        //{
-        //    try
-        //    {
-        //        return Ok(await _countriesRepository.GetAllCountryAsync());
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return StatusCode(StatusCodes.Status500InternalServerError,
-        //       "Error retrieving data from the database");
-        //    }
-            
-        //}
-
-        [HttpGet("full")]
-        [ResponseCache(CacheProfileName = "PorDefecto20Segundos")]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetFullAsync()
-        {
-            return Ok(await _countriesRepository.GetFullCountryAsync());
-        }
-
         [HttpGet("{id:int}")]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> GetAsync(int id)
         {
             try
             {
-                var country = await _countriesRepository.GetOnlyCountryoAsync(id);
-                
-                if (!country.IsSuccess)
+                var category = await _salesDbContext.Categories.FirstOrDefaultAsync(c => c.Id==id);
+                if (category is null)
                 {
-                    return NotFound(country.ErrorMessage);
+                    return StatusCode(StatusCodes.Status404NotFound, "There are not Data");
                 }
-                return Ok(country.Result);
+               
+                return Ok(category);
             }
             catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError,
               "Error retrieving data from the database");
             }
-            
+
         }
 
         [HttpPost]
-        [ProducesResponseType(201, Type = typeof(Country))]
+        [ProducesResponseType(201, Type = typeof(Category))]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> PostAsync(Country country)
+        public async Task<ActionResult> PostAsync(Category category)
         {
             try
             {
@@ -123,16 +100,16 @@ namespace Sales.API.Controllers
                     return StatusCode(StatusCodes.Status400BadRequest, ModelState);
                 }
 
-                _salesDbContext.Add(country);
+                _salesDbContext.Categories.Add(category);
                 await _salesDbContext.SaveChangesAsync();
-                return Ok(country);
+                return Ok(category);
             }
             catch (DbUpdateException dbUpdateException)
             {
                 if (dbUpdateException.InnerException!.Message.Contains("duplicate"))
                 {
                     //return BadRequest("Ya existe un país con el mismo nombre.");
-                    return StatusCode(StatusCodes.Status400BadRequest, "Ya existe un país con el mismo nombre.");
+                    return StatusCode(StatusCodes.Status400BadRequest, "Ya existe un Categoria con el mismo nombre.");
                 }
                 return StatusCode(StatusCodes.Status400BadRequest, dbUpdateException.Message);
                 //return BadRequest(dbUpdateException.Message);
@@ -150,7 +127,7 @@ namespace Sales.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> PutAsync(Country country)
+        public async Task<ActionResult> PutAsync(Category category)
         {
             try
             {
@@ -158,9 +135,9 @@ namespace Sales.API.Controllers
                 {
                     return StatusCode(StatusCodes.Status400BadRequest, ModelState);
                 }
-                _salesDbContext.Update(country);
+                _salesDbContext.Categories.Update(category);
                 await _salesDbContext.SaveChangesAsync();
-                return Ok(country);
+                return Ok(category);
             }
             catch (DbUpdateException dbUpdateException)
             {
@@ -190,22 +167,22 @@ namespace Sales.API.Controllers
         {
             try
             {
-                var country = await _salesDbContext
-                    .Countries.
+                var category = await _salesDbContext
+                    .Categories.
                     FirstOrDefaultAsync(x => x.Id.Equals(id));
 
-                if (country == null) 
+                if (category == null)
                 {
-                    return NotFound();
+                    return StatusCode(StatusCodes.Status404NotFound, "There are not Data");
                 }
 
-                var afectedRows = await _salesDbContext.Countries
+                var afectedRows = await _salesDbContext.Categories
                .Where(x => x.Id == id)
                .ExecuteDeleteAsync();
 
                 if (afectedRows == 0)
                 {
-                    ModelState.AddModelError("", $"Algo salió mal borrando el registro{country.Name}");
+                    ModelState.AddModelError("", $"Algo salió mal borrando el registro{category.Name}");
                     return StatusCode(500, ModelState);
                 }
 
@@ -217,5 +194,6 @@ namespace Sales.API.Controllers
             "Error retrieving data from the database");
             }
         }
+
     }
 }
