@@ -5,10 +5,26 @@
 
 
 <h3> Categorias </h3>
-
-<div class="mb-3">
-    <a class="btn btn-outline-primary mb-3" href="/categories/create">Nueva Categoria</a>
+<div class="d-flex justify-content-center">
+    <div class="mb-2" style="display: flex; flex-wrap:wrap; align-items: center;">
+        <div>
+            <a class="btn btn-outline-primary" href="/categories/create">Nuevo Categoria</a>
+        </div>
+        <div class="mx-2">
+            <input style="width: 400px;" type="text" class="form-control" id="titulo" placeholder="Buscar Categoria..." @bind-value="Filter" />
+        </div>
+        <div>
+            <button type="button" class="btn btn-outline-primary" @onclick="ApplyFilterAsync">Filtrar</button>
+            <button type="button" class="btn btn-outline-danger" @onclick="CleanFilterAsync">Limpiar</button>
+        </div>
+    </div>
 </div>
+
+
+<Pagination CurrentPage="currentPage"
+            TotalPages="totalPages"
+            SelectedPage="SelectedPageAsync" />
+
 
 <GenericList MyList="Categories">
     <Body>
@@ -40,17 +56,59 @@
 @code {
     public List<Category>? Categories { get; set; }
 
+    private int currentPage = 1;
+    private int totalPages;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Page { get; set; } = string.Empty;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Filter { get; set; } = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadAsync();
     }
 
-    private async Task LoadAsync()
-    {
-        var responseHttp = await repository.Get<List<Category>>("/api/categories");
-        Categories = responseHttp.Response;
-    }
+    //private async Task LoadAsync()
+    //{
+    //    var responseHttp = await repository.Get<List<Category>>("/api/categories");
+    //    Categories = responseHttp.Response;
+    //}
 
+    private async Task LoadAsync(int page = 1)
+    {
+        if (!string.IsNullOrWhiteSpace(Page))
+        {
+            page = Convert.ToInt32(Page);
+        }
+
+        string url1 = string.Empty;
+        string url2 = string.Empty;
+
+        if (string.IsNullOrEmpty(Filter))
+        {
+            url1 = $"api/categories?page={page}";
+            url2 = $"api/categories/totalPages";
+        }
+        else
+        {
+            url1 = $"api/categories?page={page}&filter={Filter}";
+            url2 = $"api/categories/totalPages?filter={Filter}";
+        }
+
+        var responseHppt = await repository.Get<List<Category>>(url1);
+        var responseHppt2 = await repository.Get<int>(url2);
+        Categories = responseHppt.Response!;
+        totalPages = responseHppt2.Response!;
+    }
+    private async Task SelectedPageAsync(int page)
+    {
+        currentPage = page;
+        await LoadAsync(page);
+    }
     private async Task DeleteAsync(int id)
     {
         var result = await sweetAlertService.FireAsync(new SweetAlertOptions
@@ -81,5 +139,18 @@
         }
 
         await LoadAsync();
+    }
+
+    private async Task CleanFilterAsync()
+    {
+        Filter = string.Empty;
+        await ApplyFilterAsync();
+    }
+
+    private async Task ApplyFilterAsync()
+    {
+        int page = 1;
+        await LoadAsync(page);
+        await SelectedPageAsync(page);
     }
 }

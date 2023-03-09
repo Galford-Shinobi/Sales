@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Sales.API.Helpers;
 using Sales.Shared.Applications.Interfaces;
 using Sales.Shared.DataBase;
+using Sales.Shared.DTOs;
 using Sales.Shared.Entities;
 
 namespace Sales.API.Controllers
@@ -18,23 +20,59 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet]
-        //[ResponseCache(Duration = 20)]
         [ResponseCache(CacheProfileName = "PorDefecto20Segundos")]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetAsync()
+        public async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
         {
-            try
+            var queryable = _salesDbContext.Countries
+                .Include(x => x.States)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
             {
-                return Ok(await _countriesRepository.GetAllCountryAsync());
+                queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
             }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-               "Error retrieving data from the database");
-            }
-            
+
+            return Ok(await queryable
+                .OrderBy(x => x.Name)
+                .Paginate(pagination)
+                .ToListAsync());
         }
+
+        [HttpGet("totalPages")]
+        public async Task<ActionResult> GetPages([FromQuery] PaginationDTO pagination)
+        {
+            var queryable = _salesDbContext.Countries.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+            {
+                queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+            }
+
+            double count = await queryable.CountAsync();
+            double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
+            return Ok(totalPages);
+        }
+
+        //[HttpGet]
+        //[ResponseCache(Duration = 20)]
+        //[ResponseCache(CacheProfileName = "PorDefecto20Segundos")]
+        //[ProducesResponseType(StatusCodes.Status403Forbidden)]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //public async Task<ActionResult> GetAsync()
+        //{
+        //    try
+        //    {
+        //        return Ok(await _countriesRepository.GetAllCountryAsync());
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return StatusCode(StatusCodes.Status500InternalServerError,
+        //       "Error retrieving data from the database");
+        //    }
+            
+        //}
 
         [HttpGet("full")]
         [ResponseCache(CacheProfileName = "PorDefecto20Segundos")]
@@ -179,6 +217,5 @@ namespace Sales.API.Controllers
             "Error retrieving data from the database");
             }
         }
-
     }
 }
