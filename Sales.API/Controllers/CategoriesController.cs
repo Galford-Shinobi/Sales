@@ -48,6 +48,9 @@ namespace Sales.API.Controllers
         }
 
         [HttpGet("totalPages")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> GetPages([FromQuery] PaginationDTO pagination)
         {
             var queryable = _salesDbContext.Categories.AsQueryable();
@@ -87,7 +90,7 @@ namespace Sales.API.Controllers
 
         [HttpPost]
         [ProducesResponseType(201, Type = typeof(Category))]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

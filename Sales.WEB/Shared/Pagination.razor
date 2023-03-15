@@ -14,7 +14,7 @@
 @code {
     [Parameter] public int CurrentPage { get; set; } = 1;
     [Parameter] public int TotalPages { get; set; }
-    [Parameter] public int Radio { get; set; } = 5;
+    [Parameter] public int Radio { get; set; } = 4;
     [Parameter] public EventCallback<int> SelectedPage { get; set; }
     List<PageModel> Links = new();
 
@@ -37,6 +37,7 @@
             {
                 Links.Add(new PageModel
                     {
+                        Active = CurrentPage==i,
                         Page = i,
                         Enable = CurrentPage == i,
                         Text = $"{i}"
@@ -61,7 +62,13 @@
         {
             return;
         }
+       
 
+        //if (!pageModel.Enable)
+        //{
+        //    return;
+        //}
+        CurrentPage = pageModel.Page;
         await SelectedPage.InvokeAsync(pageModel.Page);
     }
 
