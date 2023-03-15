@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using Sales.API.Helpers;
 using Sales.Shared.DTOs;
 using Sales.Shared.Entities;
+using Sales.Shared.Responses;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -73,16 +74,19 @@ namespace Sales.API.Controllers
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var expiration = DateTime.UtcNow.AddDays(30);
             var token = new JwtSecurityToken(
-                issuer: null,
-                audience: null,
+                issuer: _configuration["Issuer"],
+                audience: _configuration["Audience"],
                 claims: claims,
                 expires: expiration,
                 signingCredentials: credentials);
 
+            var UserResp = new UserResponse { Id =  user.Id, Document = user.Document, FirstName = user.FirstName,LastName = user.LastName, Email = user.Email };
+
             return new TokenDTO
             {
                 Token = new JwtSecurityTokenHandler().WriteToken(token),
-                Expiration = expiration
+                Expiration = expiration,
+                User = UserResp,
             };
         }
     }

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sales.API.Helpers;
 using Sales.Shared.DataBase;
@@ -7,7 +9,7 @@ using Sales.Shared.Entities;
 
 namespace Sales.API.Controllers
 {
-
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class CategoriesController : BaseApiController
     {
         private readonly SalesDbContext _salesDbContext;
