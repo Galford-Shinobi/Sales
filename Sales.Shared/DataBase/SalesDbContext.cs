@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Sales.Shared.Entities;
 
 namespace Sales.Shared.DataBase
 {
-    public class SalesDbContext : DbContext
+    public class SalesDbContext :  IdentityDbContext<User>
     {
         public SalesDbContext(DbContextOptions<SalesDbContext> options) : base(options)
         { }

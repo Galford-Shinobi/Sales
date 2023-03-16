@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sales.API.Helpers;
 using Sales.Shared.Applications.Interfaces;
@@ -8,6 +10,7 @@ using Sales.Shared.Entities;
 
 namespace Sales.API.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class CountriesController : BaseApiController
     {
         private readonly SalesDbContext _salesDbContext;
@@ -18,7 +21,15 @@ namespace Sales.API.Controllers
             _salesDbContext = salesDbContext;
             _countriesRepository = countriesRepository;
         }
-
+        [AllowAnonymous]
+        [HttpGet("combo")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> GetCombo()
+        {
+            return Ok(await _salesDbContext.Countries.ToListAsync());
+        }
         [HttpGet]
         [ResponseCache(CacheProfileName = "PorDefecto20Segundos")]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]

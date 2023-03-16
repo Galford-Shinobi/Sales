@@ -2,9 +2,10 @@
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
+@attribute [Authorize(Roles = "Admin")]
 
 <h3>Paises</h3>
-<div class="d-flex justify-content-center">
+<div class="mb-2" style="display: flex; flex-wrap:wrap; align-items: center;">
     <div class="mb-2" style="display: flex; flex-wrap:wrap; align-items: center;">
         <div>
             <a class="btn btn-outline-primary" href="/countries/create">Nuevo País</a>
@@ -95,10 +96,26 @@
             url2 = $"api/countries/totalPages?filter={Filter}";
         }
 
-        var responseHppt = await repository.Get<List<Country>>(url1);
-        var responseHppt2 = await repository.Get<int>(url2);
-        Countries = responseHppt.Response!;
-        totalPages = responseHppt2.Response!;
+
+        try
+        {
+            var responseHppt = await repository.Get<List<Country>>(url1);
+            if (responseHppt.Error)
+            {
+                var message = await responseHppt.GetErrorMessageAsync();
+                await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+                return;
+            }
+
+            var responseHppt2 = await repository.Get<int>(url2);
+            Countries = responseHppt.Response!;
+            totalPages = responseHppt2.Response!;
+        }
+        catch (Exception ex)
+        {
+            await sweetAlertService.FireAsync("Error", ex.Message, SweetAlertIcon.Error);
+        }
+
     }
 
     private async Task SelectedPageAsync(int page)
@@ -145,9 +162,16 @@
         await ApplyFilterAsync();
     }
 
+   
     private async Task ApplyFilterAsync()
     {
         int page = 1;
+
+        if (!string.IsNullOrWhiteSpace(Page))
+        {
+            page = Convert.ToInt32(Page);
+        }
+
         await LoadAsync(page);
         await SelectedPageAsync(page);
     }

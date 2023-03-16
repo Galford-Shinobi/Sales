@@ -2,7 +2,7 @@
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
-
+@attribute [Authorize(Roles = "Admin")]
 
 @if (country is null)
 {
@@ -37,6 +37,7 @@ else
 
     <Pagination CurrentPage="currentPage"
             TotalPages="totalPages"
+            Radio="5"
             SelectedPage="SelectedPageAsync" />
 
 
@@ -122,7 +123,7 @@ else
         await LoadAsync(page);
     }
 
-    private async Task LoadAsync(int page = 1)
+    private async Task LoadAsync(int page = 1, int quantityPerPage = 10)
     {
         if (!string.IsNullOrWhiteSpace(Page))
         {
@@ -134,12 +135,12 @@ else
 
         if (string.IsNullOrEmpty(Filter))
         {
-            url1 = $"api/states?id={Id}&page={page}";
+            url1 = $"api/states?id={Id}&page={page}&RecordsNumber={quantityPerPage}";
             url2 = $"api/states/totalPages?id={Id}";
         }
         else
         {
-            url1 = $"api/states?id={Id}&page={page}&filter={Filter}";
+            url1 = $"api/states?id={Id}&page={page}&RecordsNumber={quantityPerPage}&filter={Filter}";
             url2 = $"api/states/totalPages?id={Id}&filter={Filter}";
         }
 

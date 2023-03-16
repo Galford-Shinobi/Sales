@@ -1,8 +1,17 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
+<PageTitle> Sales </PageTitle>
 
-<h1>Hello, world! Tutorial 69 - Parte 08 00:08:59-  </h1>
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        <p>Estas autenticado, @context.User.Identity?.Name</p>
+    </Authorized>
+    <NotAuthorized>
+        <p>No estas autorizado</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+<h1>Hello, world! Tutorial 69 - Parte 12 00:00:00 -  </h1>
 
 Welcome to your new app.
 
