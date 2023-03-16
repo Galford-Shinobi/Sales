@@ -63,7 +63,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 
-builder.Services.AddSwaggerGen();
+//builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SalesDbContext>(o =>
 {
     o.UseSqlServer(builder.Configuration.GetConnectionString("DockerConnection"));
