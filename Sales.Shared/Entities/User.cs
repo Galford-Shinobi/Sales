@@ -29,6 +29,9 @@ namespace Sales.Shared.Entities
         [Display(Name = "Foto")]
         public string? Photo { get; set; }
 
+        [Display(Name = "Photo")]
+        public string MyFileStorageImage { get; set; }
+
         [Display(Name = "Tipo de usuario")]
         public UserType UserType { get; set; }
 

@@ -19,6 +19,16 @@ namespace Sales.API.Controllers
             _salesDbContext = salesDbContext;
         }
 
+        [AllowAnonymous]
+        [HttpGet("combo")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> GetCombo()
+        {
+            return Ok(await _salesDbContext.Categories.ToListAsync());
+        }
+
         [HttpGet]
         //[ResponseCache(Duration = 20)]
         [ResponseCache(CacheProfileName = "PorDefecto20Segundos")]
