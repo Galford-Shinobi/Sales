@@ -148,7 +148,14 @@ else
                 return;
             }
         }
-
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.TopEnd,
+                ShowConfirmButton = true,
+                Timer = 5000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "El registro fue Borrado con éxito.");
         await LoadAsync();
     }
 

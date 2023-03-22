@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using Sales.API.Helpers;
@@ -35,6 +37,91 @@ namespace Sales.API.Controllers
             _fireBaseService = fireBaseService;
             _container = "users";
         }
+
+        [HttpPost("RecoverPassword")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> RecoverPassword([FromBody] EmailDTO model)
+        {
+            User user = await _userHelper.GetUserAsync(model.Email);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var myToken = await _userHelper.GeneratePasswordResetTokenAsync(user);
+            var tokenLink = Url.Action("ResetPassword", "accounts", new
+            {
+                userid = user.Id,
+                token = myToken
+            }, HttpContext.Request.Scheme, _configuration["UrlWEB"]);
+
+            var response = _mailHelper.SendMail(user.FullName, user.Email!,
+                $"Sales - Recuperación de contraseña",
+                $"<h1>Sales - Recuperación de contraseña</h1>" +
+                $"<p>Para recuperar su contraseña, por favor hacer clic 'Recuperar Contraseña':</p>" +
+                $"<b><a href ={tokenLink}>Recuperar Contraseña</a></b>");
+
+            if (response.IsSuccess)
+            {
+                return NoContent();
+            }
+
+            return BadRequest(response.Message);
+        }
+
+        [HttpPost("ResetPassword")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordDTO model)
+        {
+            User user = await _userHelper.GetUserAsync(model.Email);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var result = await _userHelper.ResetPasswordAsync(user, model.Token, model.Password);
+            if (result.Succeeded)
+            {
+                return NoContent();
+            }
+
+            return BadRequest(result.Errors.FirstOrDefault()!.Description);
+        }
+
+        [HttpPost("changePassword")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> ChangePasswordAsync(ChangePasswordDTO model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userHelper.GetUserAsync(User.Identity!.Name!);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var result = await _userHelper.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors.FirstOrDefault()!.Description);
+            }
+
+            return NoContent();
+        }
+
         [HttpPost("CreateUser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -66,6 +153,78 @@ namespace Sales.API.Controllers
             }
 
             return BadRequest(result.Errors.FirstOrDefault());
+        }
+
+
+        [HttpPut]
+        //[HttpPost("UpdateUser")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> Put(User user)
+        {
+            try
+            {
+                string nombreImagen = "";
+                var StorageCarpeta_Usuario = _configuration["Configuracion:FireBase_StorageCarpeta_Usuario"];
+
+                if (!string.IsNullOrEmpty(user.Photo))
+                {
+
+                    string nombre_en_codigo = Guid.NewGuid().ToString("N");
+                    string extension = ".png";
+                    nombreImagen = string.Concat(nombre_en_codigo, extension);
+
+                    var fileFromBase64ToStream = FirebaseStorageService.ConvertBase64ToStream(user.Photo);
+                    var fileStream = fileFromBase64ToStream.ReadAsStream();
+                    user.MyFileStorageImage = await _fireBaseService.SubirStorageAsync(fileStream, StorageCarpeta_Usuario, nombreImagen);
+
+
+                    var photoUser = Convert.FromBase64String(user.Photo);
+                    user.Photo = await _fileStorage.SaveFileAsync(photoUser, ".jpg", _container);
+                }
+
+                var currentUser = await _userHelper.GetUserAsync(user.Email!);
+                if (currentUser == null)
+                {
+                    return NotFound();
+                }
+
+                currentUser.Document = user.Document;
+                currentUser.FirstName = user.FirstName;
+                currentUser.LastName = user.LastName;
+                currentUser.Address = user.Address;
+                currentUser.PhoneNumber = user.PhoneNumber;
+                currentUser.Photo = !string.IsNullOrEmpty(user.Photo) && user.Photo != currentUser.Photo ? user.Photo : currentUser.Photo;
+                currentUser.MyFileStorageImage = !string.IsNullOrEmpty(user.MyFileStorageImage) && user.MyFileStorageImage != currentUser.MyFileStorageImage ? user.MyFileStorageImage : currentUser.MyFileStorageImage;
+                currentUser.CityId = user.CityId;
+
+                var result = await _userHelper.UpdateUserAsync(currentUser);
+                if (result.Succeeded)
+                {
+                    return NoContent();
+                }
+
+                return BadRequest(result.Errors.FirstOrDefault());
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> Get()
+        {
+            return Ok(await _userHelper.GetUserAsync(User.Identity!.Name!));
         }
 
 
@@ -169,21 +328,6 @@ namespace Sales.API.Controllers
 
             return NoContent();
         }
-        private static async Task<Stream> Upload(string FileBase64)
-        {
-            var fileFromBase64ToStream = FirebaseStorageService.ConvertBase64ToStream(FileBase64);
-            var fileStream = fileFromBase64ToStream.ReadAsStream();
-
-            //string fileUrlFirebase = await FirebaseStorageService.UploadFile(fileStream, file);
-            return fileStream;
-        }
-        //private static async Task<string> Upload(FileModel file)
-        //{
-        //    var fileFromBase64ToStream = FirebaseStorageService.ConvertBase64ToStream(file.FileBase64);
-        //    var fileStream = fileFromBase64ToStream.ReadAsStream();
-
-        //    string fileUrlFirebase = await FirebaseStorageService.UploadFile(fileStream, file);
-        //    return fileUrlFirebase;
-        //}
+       
     }
 }
