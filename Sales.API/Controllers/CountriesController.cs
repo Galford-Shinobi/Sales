@@ -21,6 +21,7 @@ namespace Sales.API.Controllers
             _salesDbContext = salesDbContext;
             _countriesRepository = countriesRepository;
         }
+
         [AllowAnonymous]
         [HttpGet("combo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -30,6 +31,7 @@ namespace Sales.API.Controllers
         {
             return Ok(await _salesDbContext.Countries.ToListAsync());
         }
+
         [HttpGet]
         [ResponseCache(CacheProfileName = "PorDefecto20Segundos")]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]

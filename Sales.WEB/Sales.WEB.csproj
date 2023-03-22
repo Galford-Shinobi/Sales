@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Auth\EditUser.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CurrieTechnologies.Razor.SweetAlert2" Version="5.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="7.0.4" />
@@ -16,6 +20,18 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sales.Shared\Sales.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Auth\EditUser.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Auth\EditUser.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Pages\Auth\EditUser.razor" />
   </ItemGroup>
 
 </Project>

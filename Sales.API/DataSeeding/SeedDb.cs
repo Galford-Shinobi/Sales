@@ -37,6 +37,13 @@ namespace Sales.API.DataSeeding
             var user = await _userHelper.GetUserAsync(email);
             if (user == null)
             {
+
+                var city = await _context.Cities.FirstOrDefaultAsync(x => x.Name == "Higashikurume-shi");
+                if (city == null)
+                {
+                    city = await _context.Cities.FirstOrDefaultAsync();
+                }
+
                 user = new User
                 {
                     FirstName = firstName,
@@ -52,6 +59,9 @@ namespace Sales.API.DataSeeding
 
                 await _userHelper.AddUserAsync(user, "User123456");
                 await _userHelper.AddUserToRoleAsync(user, userType.ToString());
+
+                var token = await _userHelper.GenerateEmailConfirmationTokenAsync(user);
+                await _userHelper.ConfirmEmailAsync(user, token);
             }
 
             return user;

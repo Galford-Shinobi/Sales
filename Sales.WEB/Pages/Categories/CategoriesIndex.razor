@@ -4,55 +4,63 @@
 @inject SweetAlertService sweetAlertService
 @attribute [Authorize(Roles = "Admin")]
 
+@if (Categories is null)
+{
+    <div class="spinner" />
+}
+else
+{
+    <div class="card">
+        <div class="card-header">
+            <span>
+                <i class="oi oi-globe" /> Categoria
+                <a class="btn btn-sm btn-outline-primary float-end" href="/categories/create"><i class="oi oi-plus" /> Adicionar Categoria</a>
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="mb-2" style="display: flex; flex-wrap:wrap; align-items: center;">
+                <div>
+                    <input style="width: 400px;" type="text" class="form-control" id="titulo" placeholder="Buscar país..." @bind-value="Filter" />
+                </div>
+                <div class="mx-1">
+                    <button type="button" class="btn btn-outline-primary" @onclick="ApplyFilterAsync"><i class="oi oi-layers" /> Filtrar</button>
+                    <button type="button" class="btn btn-outline-danger" @onclick="CleanFilterAsync"><i class="oi oi-ban" /> Limpiar</button>
+                </div>
+            </div>
 
-<h3> Categorias </h3>
-<div class="d-flex justify-content-center">
-    <div class="mb-2" style="display: flex; flex-wrap:wrap; align-items: center;">
-        <div>
-            <a class="btn btn-outline-primary" href="/categories/create">Nuevo Categoria</a>
-        </div>
-        <div class="mx-2">
-            <input style="width: 400px;" type="text" class="form-control" id="titulo" placeholder="Buscar Categoria..." @bind-value="Filter" />
-        </div>
-        <div>
-            <button type="button" class="btn btn-outline-primary" @onclick="ApplyFilterAsync">Filtrar</button>
-            <button type="button" class="btn btn-outline-danger" @onclick="CleanFilterAsync">Limpiar</button>
+            <Pagination CurrentPage="currentPage"
+                    TotalPages="totalPages"
+                    SelectedPage="SelectedPageAsync" />
+
+            <GenericList MyList="Categories">
+                <Body>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Categoria</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var category in Categories!)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn btn-outline-warning" href="/categories/edit/@category.Id"><i class="oi oi-pencil" /> Editar</a>
+                                        <button class="btn btn-outline-danger" @onclick=@(() => DeleteAsync(category.Id))><i class="oi oi-trash" /> Borrar</button>
+                                    </td>
+                                    <td>
+                                        @category.Name
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </Body>
+            </GenericList>
         </div>
     </div>
-</div>
-
-
-<Paginations CurrentPage="currentPage"
-             TotaPagesQuantity="totalPageQuantity"
-            SelectedPage="SelectedPageAsync" />
-
-
-<GenericList MyList="Categories">
-    <Body>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Categoria</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var category in Categories!)
-                {
-                    <tr>
-                        <td>
-                            <a class="btn btn-outline-warning" href="/categories/edit/@category.Id">Editar</a>
-                            <button class="btn btn-outline-danger" @onclick=@(() => DeleteAsync(category.Id))>Borrar</button>
-                        </td>
-                        <td>
-                            @category.Name
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </Body>
-</GenericList>
+}
 
 @code {
     public List<Category>? Categories { get; set; }
@@ -140,7 +148,14 @@
                 return;
             }
         }
-
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.TopEnd,
+                ShowConfirmButton = true,
+                Timer = 5000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "El registro fue Borrado con éxito.");
         await LoadAsync();
     }
 
