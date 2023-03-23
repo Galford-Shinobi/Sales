@@ -88,5 +88,6 @@ namespace Sales.WEB.Repositories
             var respuestaString = await httpResponse.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<T>(respuestaString, jsonSerializerOptions)!;
         }
+        
     }
 }

@@ -109,11 +109,22 @@ else
             url2 = $"api/categories/totalPages?filter={Filter}";
         }
 
-        var responseHppt = await repository.Get<List<Category>>(url1);
-        var responseHppt2 = await repository.Get<int>(url2);
-        Categories = responseHppt.Response!;
-        totalPages = responseHppt2.Response!;
-        totalPageQuantity = responseHppt2.Response!;
+        //var responseHppt = await repository.Get<List<Category>>(url1);
+        //var responseHppt2 = await repository.Get<int>(url2);
+        //Categories = responseHppt.Response!;
+        //totalPages = responseHppt2.Response!;
+        //totalPageQuantity = responseHppt2.Response!;
+        try
+        {
+            var responseHppt = await repository.Get<List<Category>>(url1);
+            var responseHppt2 = await repository.Get<int>(url2);
+            Categories = responseHppt.Response!;
+            totalPages = responseHppt2.Response!;
+        }
+        catch (Exception ex)
+        {
+            await sweetAlertService.FireAsync("Error", ex.Message, SweetAlertIcon.Error);
+        }
     }
     private async Task SelectedPageAsync(int page)
     {
@@ -148,15 +159,18 @@ else
                 return;
             }
         }
-        var toast = sweetAlertService.Mixin(new SweetAlertOptions
-            {
-                Toast = true,
-                Position = SweetAlertPosition.TopEnd,
-                ShowConfirmButton = true,
-                Timer = 5000
-            });
-        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "El registro fue Borrado con éxito.");
-        await LoadAsync();
+        else
+        {
+            var toast = sweetAlertService.Mixin(new SweetAlertOptions
+                {
+                    Toast = true,
+                    Position = SweetAlertPosition.TopEnd,
+                    ShowConfirmButton = true,
+                    Timer = 5000
+                });
+            await toast.FireAsync(icon: SweetAlertIcon.Success, message: "El registro fue Borrado con éxito.");
+            await LoadAsync();
+        }
     }
 
     private async Task CleanFilterAsync()

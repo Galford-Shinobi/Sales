@@ -32,6 +32,29 @@ namespace Sales.API.DataSeeding
             await CheckUserAsync("911", "Draco", "Master", "dracomaster@yopmail.com", "555 666 7789", "Izanaki, Amaterasu", UserType.Admin);
         }
 
+        private async Task CheckCategoriesAsync()
+        {
+            if (!_context.Categories.Any())
+            {
+                _context.Categories.Add(new Category { Name = "Deportes" });
+                _context.Categories.Add(new Category { Name = "Calzado" });
+                _context.Categories.Add(new Category { Name = "Tecnología " });
+                _context.Categories.Add(new Category { Name = "Lenceria" });
+                _context.Categories.Add(new Category { Name = "Erótica" });
+                _context.Categories.Add(new Category { Name = "Comida" });
+                _context.Categories.Add(new Category { Name = "Ropa" });
+                _context.Categories.Add(new Category { Name = "Jugetes" });
+                _context.Categories.Add(new Category { Name = "Mascotas" });
+                _context.Categories.Add(new Category { Name = "Autos" });
+                _context.Categories.Add(new Category { Name = "Cosmeticos" });
+                _context.Categories.Add(new Category { Name = "Hogar" });
+                _context.Categories.Add(new Category { Name = "Jardín" });
+                _context.Categories.Add(new Category { Name = "Ferreteria" });
+                _context.Categories.Add(new Category { Name = "Video Juegos" });
+                await _context.SaveChangesAsync();
+            }
+        }
+
         private async Task<User> CheckUserAsync(string document, string firstName, string lastName, string email, string phone, string address, UserType userType)
         {
             var user = await _userHelper.GetUserAsync(email);
@@ -74,20 +97,7 @@ namespace Sales.API.DataSeeding
         }
 
 
-        private async Task CheckCategoriesAsync()
-        {
-            if (!_context.Categories.Any())
-            {
-                //await AddCategoryAsync("Ropa");
-                //await AddCategoryAsync("Tecnología");
-                //await AddCategoryAsync("Mascotas");
-                _context.Categories.Add(new Category { Name = "Ropa" });
-                _context.Categories.Add(new Category { Name = "Tecnología" });
-                _context.Categories.Add(new Category { Name = "Mascotas" });
-               
-                await _context.SaveChangesAsync();
-            }
-        }
+       
 
         private async Task CheckCountriesAsync()
         {
