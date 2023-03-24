@@ -25,6 +25,9 @@ else
     [Parameter]
     public int CityId { get; set; }
 
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
         var responseHttp = await repository.Get<City>($"/api/cities/{CityId}");
