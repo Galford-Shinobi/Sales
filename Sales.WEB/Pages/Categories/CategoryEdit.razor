@@ -1,18 +1,13 @@
-﻿@page "/Categories/edit/{Id:int}"
+﻿@page "/categories/edit/{CategoryId:int}"
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
-@attribute [Authorize(Roles = "Admin")]
 
-
-<h3>Editar Categoria</h3>
+<h3>Editar categoría</h3>
 
 @if (category is null)
 {
-    <p>Cargando...</p>
-    <div class="align-items-center">
-        <img src="https://i.stack.imgur.com/hzk6C.gif" />
-    </div>
+    <div class="spinner" />
 }
 else
 {
@@ -23,17 +18,20 @@ else
     private Category? category;
     private CategoryForm? categoryForm;
 
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
     [Parameter]
-    public int Id { get; set; }
+    public int CategoryId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        var responseHttp = await repository.Get<Category>($"/api/Categories/{Id}");
+        var responseHttp = await repository.Get<Category>($"/api/categories/{CategoryId}");
         if (responseHttp.Error)
         {
             if (responseHttp.HttpResponseMessage.StatusCode == HttpStatusCode.NotFound)
             {
-                navigationManager.NavigateTo("/Categories");
+                navigationManager.NavigateTo("/categories");
                 return;
             }
 
@@ -47,7 +45,7 @@ else
 
     private async Task EditAsync()
     {
-        var responseHttp = await repository.Put("/api/Categories", category);
+        var responseHttp = await repository.Put("/api/categories", category);
         if (responseHttp.Error)
         {
             var message = await responseHttp.GetErrorMessageAsync();
@@ -55,12 +53,13 @@ else
             return;
         }
 
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         Return();
     }
 
     private void Return()
     {
         categoryForm!.FormPostedSuccessfully = true;
-        navigationManager.NavigateTo("/Categories");
+        navigationManager.NavigateTo($"/categories");
     }
 }
