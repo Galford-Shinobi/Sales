@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -11,11 +11,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blazor.Bootstrap" Version="1.6.0" />
     <PackageReference Include="Blazored.Modal" Version="7.1.0" />
     <PackageReference Include="CurrieTechnologies.Razor.SweetAlert2" Version="5.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="7.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.1" PrivateAssets="all" />
+    <PackageReference Include="MudBlazor" Version="6.2.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.27.0" />
   </ItemGroup>
 

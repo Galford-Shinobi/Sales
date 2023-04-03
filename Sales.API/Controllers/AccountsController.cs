@@ -175,8 +175,8 @@ namespace Sales.API.Controllers
         }
 
 
-        [HttpPut]
-        //[HttpPost("UpdateUser")]
+        //[HttpPut]
+        [HttpPost("UpdateUser")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

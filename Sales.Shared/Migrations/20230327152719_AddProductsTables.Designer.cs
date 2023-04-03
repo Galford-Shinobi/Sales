@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sales.Shared.DataBase;
 
@@ -11,9 +12,11 @@ using Sales.Shared.DataBase;
 namespace Sales.Shared.Migrations
 {
     [DbContext(typeof(SalesDbContext))]
-    partial class SalesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230327152719_AddProductsTables")]
+    partial class AddProductsTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -232,11 +235,6 @@ namespace Sales.Shared.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CodeBar")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
                     b.Property<string>("Description")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -253,9 +251,6 @@ namespace Sales.Shared.Migrations
                         .HasColumnType("real");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CodeBar")
-                        .IsUnique();
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -332,40 +327,6 @@ namespace Sales.Shared.Migrations
                         .IsUnique();
 
                     b.ToTable("States");
-                });
-
-            modelBuilder.Entity("Sales.Shared.Entities.TemporalSale", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<float>("Quantity")
-                        .HasColumnType("real");
-
-                    b.Property<string>("Remarks")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("TemporalSaleId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("TemporalSaleId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("TemporalSales");
                 });
 
             modelBuilder.Entity("Sales.Shared.Entities.User", b =>
@@ -570,27 +531,6 @@ namespace Sales.Shared.Migrations
                     b.Navigation("Country");
                 });
 
-            modelBuilder.Entity("Sales.Shared.Entities.TemporalSale", b =>
-                {
-                    b.HasOne("Sales.Shared.Entities.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Sales.Shared.Entities.TemporalSale", null)
-                        .WithMany("TemporalSales")
-                        .HasForeignKey("TemporalSaleId");
-
-                    b.HasOne("Sales.Shared.Entities.User", "User")
-                        .WithMany("TemporalSales")
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Product");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Sales.Shared.Entities.User", b =>
                 {
                     b.HasOne("Sales.Shared.Entities.City", "City")
@@ -622,16 +562,6 @@ namespace Sales.Shared.Migrations
             modelBuilder.Entity("Sales.Shared.Entities.State", b =>
                 {
                     b.Navigation("Cities");
-                });
-
-            modelBuilder.Entity("Sales.Shared.Entities.TemporalSale", b =>
-                {
-                    b.Navigation("TemporalSales");
-                });
-
-            modelBuilder.Entity("Sales.Shared.Entities.User", b =>
-                {
-                    b.Navigation("TemporalSales");
                 });
 #pragma warning restore 612, 618
         }

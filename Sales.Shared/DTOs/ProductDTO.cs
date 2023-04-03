@@ -2,9 +2,9 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace Sales.Shared.Entities
+namespace Sales.Shared.DTOs
 {
-    public class Product
+    public class ProductDTO
     {
         public int Id { get; set; }
 
@@ -13,7 +13,7 @@ namespace Sales.Shared.Entities
         [Required(ErrorMessage = "El campo {0} es obligatorio.")]
         public string Name { get; set; } = null!;
 
-        [Display(Name = "Codigo de Barras")]
+        [Display(Name = "Código Barras")]
         [MaxLength(150, ErrorMessage = "El campo {0} debe tener máximo {1} caractéres.")]
         [Required(ErrorMessage = "El campo {0} es obligatorio.")]
         public string CodeBar { get; set; }
@@ -34,18 +34,8 @@ namespace Sales.Shared.Entities
         [Required(ErrorMessage = "El campo {0} es obligatorio.")]
         public float Stock { get; set; }
 
-        public ICollection<ProductCategory>? ProductCategories { get; set; }
+        public List<int>? ProductCategoryIds { get; set; }
 
-        [Display(Name = "Categorías")]
-        public int ProductCategoriesNumber => ProductCategories == null ? 0 : ProductCategories.Count;
-
-        public ICollection<ProductImage>? ProductImages { get; set; }
-
-        [Display(Name = "Imágenes")]
-        public int ProductImagesNumber => ProductImages == null ? 0 : ProductImages.Count;
-
-        [Display(Name = "Imagén")]
-        public string MainImage => ProductImages == null ? string.Empty : ProductImages.FirstOrDefault()!.Image;
-
+        public List<string>? ProductImages { get; set; }
     }
 }

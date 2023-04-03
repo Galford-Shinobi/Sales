@@ -34,13 +34,13 @@ namespace Sales.API.DataSeeding
             await CheckCategoriesAsync();
             await CheckRolesAsync();
            
-            await CheckUserAsync("911", "Draco", "Master", "dracomaster@yopmail.com", "555 666 7789", "Izanaki, Amaterasu", "DracoMaster.jpeg", UserType.Admin);
+            await CheckUserAsync("911", "Draco", "Master", "dracomaster@yopmail.com", "555 666 7789", "Izanaki, Amaterasu", "DracoMaster.jpg", UserType.Admin);
             await CheckUserAsync("1010", "Juan", "Zuluaga", "zulu@yopmail.com", "322 311 4620", "Calle Luna Calle Sol", "JuanZuluaga.jpeg", UserType.Admin);
             await CheckUserAsync("2020", "Ledys", "Bedoya", "ledys@yopmail.com", "322 311 4620", "Calle Luna Calle Sol", "LedysBedoya.jpeg", UserType.User);
             await CheckUserAsync("3030", "Brad", "Pitt", "brad@yopmail.com", "322 311 4620", "Calle Luna Calle Sol", "Brad.jpg", UserType.User);
             await CheckUserAsync("4040", "Angelina", "Jolie", "angelina@yopmail.com", "322 311 4620", "Calle Luna Calle Sol", "Angelina.jpg", UserType.User);
             await CheckUserAsync("5050", "Bob", "Marley", "bob@yopmail.com", "322 311 4620", "Calle Luna Calle Sol", "bob.jpg", UserType.User);
-            //await CheckProductsAsync();
+            await CheckProductsAsync();
         }
 
         private async Task CheckCategoriesAsync()
@@ -106,6 +106,7 @@ namespace Sales.API.DataSeeding
                 Name = name,
                 Price = price,
                 Stock = stock,
+                CodeBar = Guid.NewGuid().ToString("N").Substring(0, 20),
                 ProductCategories = new List<ProductCategory>(),
                 ProductImages = new List<ProductImage>()
             };
@@ -130,13 +131,13 @@ namespace Sales.API.DataSeeding
                 string nombre_en_codigo = Guid.NewGuid().ToString("N");
                 string extension = ".png"; //Path.GetExtension();
                 string nombreImagen = string.Concat(nombre_en_codigo, extension);
-                var stream = File.Open($"{Environment.CurrentDirectory}\\Images\\products\\{image}", FileMode.Open);
-                var fileFromBase64ToStream = FirebaseStorageService.ConvertBase64ToStream(stream.ToString()!);
-                var fileStream = fileFromBase64ToStream.ReadAsStream();
+                //var stream = File.Open($"{Environment.CurrentDirectory}\\Images\\products\\{image}", FileMode.Open);
+                //var fileFromBase64ToStream = FirebaseStorageService.ConvertBase64ToStream(stream.ToString()!);
+                //var fileStream = fileFromBase64ToStream.ReadAsStream();
 
-                var imagePathFire = await _fireBaseService.SubirStorageAsync(fileStream, "IMAGENES_PRODUCTO", nombreImagen);
+                //var imagePathFire = await _fireBaseService.SubirStorageAsync(fileStream, "IMAGENES_PRODUCTO", nombreImagen);
 
-                prodcut.ProductImages.Add(new ProductImage { ImageFireBase = imagePathFire });
+                //prodcut.ProductImages.Add(new ProductImage { ImageFireBase = imagePathFire });
             }
 
             _context.Products.Add(prodcut);
@@ -163,13 +164,15 @@ namespace Sales.API.DataSeeding
                     string extension = ".png"; //Path.GetExtension();
                     string nombreImagen = string.Concat(nombre_en_codigo, extension);
 
+                    var imagePath = await _fileStorage.SaveFileAsync(fileBytes, "jpg", "users");
+
                     var stream = File.Open($"{Environment.CurrentDirectory}\\Images\\users\\{image}", FileMode.Open);
 
-                    var fileFromBase64ToStream = FirebaseStorageService.ConvertBase64ToStream(stream.ToString()!);
-                    var fileStream = fileFromBase64ToStream.ReadAsStream();
+                    //var fileFromBase64ToStream = FirebaseStorageService.ConvertBase64ToStream(stream.ToString()!);
+                    //var fileStream = fileFromBase64ToStream.ReadAsStream();
 
-                    var imagePath = await _fileStorage.SaveFileAsync(fileBytes, "jpg", "users");
-                    var imagePathFire = await _fireBaseService.SubirStorageAsync(fileStream, "IMAGENES_USUARIO", nombreImagen);
+                   
+                    //var imagePathFire = await _fireBaseService.SubirStorageAsync(fileStream, "IMAGENES_USUARIO", nombreImagen);
 
                     user = new User
                     {
