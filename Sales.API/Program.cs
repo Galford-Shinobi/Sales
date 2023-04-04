@@ -77,6 +77,7 @@ builder.Services.AddApplication(builder.Configuration);
 
 builder.Services.AddScoped<IFileStorage, FileStorage>();
 builder.Services.AddScoped<IMailHelper, MailHelper>();
+builder.Services.AddScoped<IOrdersHelper, OrdersHelper>();
 
 builder.Services.AddScoped<IFireBaseService, FireBaseService>();
 
