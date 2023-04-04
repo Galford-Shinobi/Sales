@@ -1,23 +1,21 @@
 ﻿@inject SweetAlertService sweetAlertService
 
-
 <NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigation" />
 
 <EditForm EditContext="editContext" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
     <div class="mb-3">
-        <label>Categoria:</label>
+        <label>Categoría:</label>
         <div>
             <InputText class="form-control" @bind-Value="@Category.Name" />
             <ValidationMessage For="@(() => Category.Name)" />
         </div>
     </div>
-    <button class="btn btn-outline-primary" type="submit"><i class="oi oi-aperture" /> Guardar Cambios</button>
-    <button class="btn btn-outline-success" @onclick="ReturnAction"><i class="oi oi-arrow-thick-left" /> Regresar</button>
+    <button class="btn btn-outline-primary" type="submit">Guardar Cambios</button>
+    <button class="btn btn-outline-success" @onclick="ReturnAction">Regresar</button>
 </EditForm>
 
 @code {
-
     private EditContext editContext = null!;
 
     [Parameter]
@@ -65,5 +63,4 @@
 
         context.PreventNavigation();
     }
-
 }

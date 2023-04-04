@@ -15,6 +15,9 @@
     [Parameter]
     public int StateId { get; set; }
 
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
     private async Task CreateAsync()
     {
         city.StateId = StateId;

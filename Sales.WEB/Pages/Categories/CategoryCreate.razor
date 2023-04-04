@@ -2,21 +2,24 @@
 @inject IRepository repository
 @inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
-@attribute [Authorize(Roles = "Admin")]
 
+<h3>Crear categoría</h3>
 
-<h3>Crear Categoria</h3>
-
-<CategoryForm @ref="categoryForm" Category="category" OnValidSubmit="Create" ReturnAction="Return" />
-
+<CategoryForm @ref="categoryForm" Category="category" OnValidSubmit="CreateAsync" ReturnAction="Return" />
 
 @code {
-    private Category  category = new();
+    private Category category = new();
     private CategoryForm? categoryForm;
 
-    private async Task Create()
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+    [Parameter]
+    public int StateId { get; set; }
+
+    private async Task CreateAsync()
     {
-        var httpResponse = await repository.Post("/api/Categories", category);
+        var httpResponse = await repository.Post("/api/categories", category);
         if (httpResponse.Error)
         {
             var message = await httpResponse.GetErrorMessageAsync();
@@ -24,12 +27,13 @@
             return;
         }
 
+        await BlazoredModal.CloseAsync(ModalResult.Ok());
         Return();
     }
 
     private void Return()
     {
         categoryForm!.FormPostedSuccessfully = true;
-        navigationManager.NavigateTo("/Categories");
+        navigationManager.NavigateTo($"/categories");
     }
 }

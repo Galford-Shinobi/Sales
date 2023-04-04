@@ -3,7 +3,7 @@
 @inject SweetAlertService sweetAlertService
 @inject NavigationManager navigationManager
 @inject ILoginService loginService
-@attribute [Authorize]
+
 
 @if (user is null)
 {
@@ -18,7 +18,8 @@ else
             <div class="card-header">
                 <span>
                     <i class="oi oi-person" /> Editar Usuario
-                    <a class="btn btn-sm btn-outline-secondary float-end" href="/changePassword"><i class="oi oi-key" /> Cambiar Contraseña</a>
+                   @*<a class="btn btn-sm btn-outline-secondary float-end" href="/changePassword"><i class="oi oi-key" /> Cambiar Contraseña</a>*@
+                    <a class="btn btn-sm btn-outline-secondary float-end" @onclick=@(() => ShowModal())><i class="oi oi-key" /> Cambiar Contraseña</a>
                     <button class="btn btn-sm btn-outline-primary float-end mx-2" type="submit"><i class="oi oi-check" /> Guardar Cambios</button>
                 </span>
             </div>
@@ -118,14 +119,14 @@ else
     </EditForm>
 }
 
-
 @code {
     private User? user;
     private List<Country>? countries;
     private List<State>? states;
     private List<City>? cities;
     private string? imageUrl;
-
+    [CascadingParameter]
+    IModalService Modal { get; set; } = default!;
     protected override async Task OnInitializedAsync()
     {
         await LoadUserAsyc();
@@ -140,6 +141,27 @@ else
         }
 
     }
+    //private void ShowModal() => Modal.Show<ChangePassword>("First Modal");
+    private async Task ShowModal(int id = 0, bool isEdit = false)
+    {
+        IModalReference modalReference;
+
+        //if (isEdit)
+        //{
+        ////    modalReference = Modal.Show<CategoryEdit>(string.Empty, new ModalParameters().Add("CategoryId", id));
+        //}
+        //else
+        //{
+         modalReference = Modal.Show<ChangePassword>();
+        //}
+
+        var result = await modalReference.Result;
+        if (result.Confirmed)
+        {
+            await LoadUserAsyc();
+        }
+    }
+
 
     private async Task LoadUserAsyc()
     {
@@ -217,7 +239,7 @@ else
 
     private async Task SaveUserAsync()
     {
-        var responseHttp = await repository.Put<User>("/api/accounts", user!);
+        var responseHttp = await repository.Put<User, TokenDTO>("/api/accounts", user!);
         if (responseHttp.Error)
         {
             var message = await responseHttp.GetErrorMessageAsync();
@@ -225,7 +247,7 @@ else
             return;
         }
 
+        await loginService.LoginAsync(responseHttp.Response!.Token);
         navigationManager.NavigateTo("/");
     }
-
 }
