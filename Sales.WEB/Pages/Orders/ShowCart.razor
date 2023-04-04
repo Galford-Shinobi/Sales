@@ -8,6 +8,88 @@
 {
     <div class="spinner" />
 }
+else
+{
+    <GenericList MyList="temporalSales">
+        <Body>
+            <div class="card">
+                <div class="card-header">
+                    <span>
+                        <i class="oi oi-cart" /> Carro de Compras
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-4">
+                            <h3>Cantidad productos: <strong>@($"{sumQuantity:N2}")</strong></h3>
+                        </div>
+                        <div class="col-4">
+                            <h3>Valor: <strong>@($"{sumValue:C2}")</strong></h3>
+                        </div>
+                    </div>
+                    <EditForm Model="SaleDTO" OnValidSubmit="ConfirmOrderAsync">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label>Comentarios:</label>
+                            <div>
+                                <InputText class="form-control" @bind-Value="@SaleDTO.Remarks" />
+                                <ValidationMessage For="@(() => SaleDTO.Remarks)" />
+                            </div>
+                        </div>
+                        <button class="btn btn-ouline-primary mb-3" type="submit"><i class="oi oi-check" /> Confirmar Pedido</button>
+                    </EditForm>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Cantidad</th>
+                                <th>Precio</th>
+                                <th>Valor</th>
+                                <th>Comentarios</th>
+                                <th>Imagén</th>
+                                <th style="width:200px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var temporalSale in temporalSales)
+                            {
+                                <tr>
+                                    <td>
+                                        @temporalSale.Product!.Name
+                                    </td>
+                                    <td>
+                                        @temporalSale.Product!.Description
+                                    </td>
+                                    <td>
+                                        @($"{temporalSale.Quantity:N2}")
+                                    </td>
+                                    <td>
+                                        @($"{temporalSale.Product!.Price:C2}")
+                                    </td>
+                                    <td>
+                                        @($"{temporalSale.Value:C2}")
+                                    </td>
+                                    <td>
+                                        @temporalSale.Remarks
+                                    </td>
+                                    <td>
+                                        <img src="@temporalSale.Product!.MainImage" style="width:100px;" />
+                                    </td>
+                                    <td>
+                                        <a href="/Orders/ModifyTemporalSale/@temporalSale.Id" class="btn btn-outline-warning"><i class="oi oi-pencil" /> Editar</a>
+                                        <button class="btn btn-outline-danger" @onclick=@(() => Delete(temporalSale.Id))><i class="oi oi-trash" /> Borrar</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </Body>
+    </GenericList>
+}
+
 
 @code {
     public List<TemporalSale>? temporalSales { get; set; }
