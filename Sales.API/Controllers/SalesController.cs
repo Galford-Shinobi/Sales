@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Sales.API.Helpers;
 using Sales.Shared.DataBase;
 using Sales.Shared.DTOs;
+using Sales.Shared.Entities;
 using Sales.Shared.Enums;
 
 namespace Sales.API.Controllers
@@ -98,5 +99,52 @@ namespace Sales.API.Controllers
             double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
             return Ok(totalPages);
         }
+
+        [HttpPut]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> Put(SaleDTO saleDTO)
+        {
+            var user = await _userHelper.GetUserAsync(User.Identity!.Name!);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            var isAdmin = await _userHelper.IsUserInRoleAsync(user, UserType.Admin.ToString());
+            if (!isAdmin && saleDTO.OrderStatus != OrderStatus.Cancelado)
+            {
+                return BadRequest("Solo permitido para administradores.");
+            }
+            var sale = await _context.Sales
+            .Include(s => s.SaleDetails)
+            .FirstOrDefaultAsync(s => s.Id == saleDTO.Id);
+            if (sale == null)
+            {
+                return NotFound();
+            }
+            if (saleDTO.OrderStatus == OrderStatus.Cancelado)
+            {
+                await ReturnStockAsync(sale);
+            }
+            sale.OrderStatus = saleDTO.OrderStatus;
+            _context.Update(sale);
+            await _context.SaveChangesAsync();
+            return Ok(sale);
+        }
+        private async Task ReturnStockAsync(Sale sale)
+        {
+            foreach (var saleDetail in sale.SaleDetails!)
+            {
+                var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == saleDetail.ProductId);
+                if (product != null)
+                {
+                    product.Stock -= saleDetail.Quantity;
+                }
+            }
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
