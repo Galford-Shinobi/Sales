@@ -12,8 +12,8 @@ using Sales.Shared.DataBase;
 namespace Sales.Shared.Migrations
 {
     [DbContext(typeof(SalesDbContext))]
-    [Migration("20230317200410_ModificUsersIni")]
-    partial class ModificUsersIni
+    [Migration("20230404163020_AddFullProjectsSaleAndSaleDetailTables")]
+    partial class AddFullProjectsSaleAndSaleDetailTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -227,6 +227,148 @@ namespace Sales.Shared.Migrations
                     b.ToTable("Countries");
                 });
 
+            modelBuilder.Entity("Sales.Shared.Entities.Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodeBar")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<float>("Stock")
+                        .HasColumnType("real");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CodeBar")
+                        .IsUnique();
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("Sales.Shared.Entities.ProductCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductCategories");
+                });
+
+            modelBuilder.Entity("Sales.Shared.Entities.ProductImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Image")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageFireBase")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductImages");
+                });
+
+            modelBuilder.Entity("Sales.Shared.Entities.Sale", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("OrderStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Remarks")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Sales");
+                });
+
+            modelBuilder.Entity("Sales.Shared.Entities.SaleDetail", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<float>("Quantity")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Remarks")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SaleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SaleId");
+
+                    b.ToTable("SaleDetails");
+                });
+
             modelBuilder.Entity("Sales.Shared.Entities.State", b =>
                 {
                     b.Property<int>("Id")
@@ -249,6 +391,40 @@ namespace Sales.Shared.Migrations
                         .IsUnique();
 
                     b.ToTable("States");
+                });
+
+            modelBuilder.Entity("Sales.Shared.Entities.TemporalSale", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<float>("Quantity")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Remarks")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TemporalSaleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("TemporalSaleId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TemporalSales");
                 });
 
             modelBuilder.Entity("Sales.Shared.Entities.User", b =>
@@ -412,6 +588,64 @@ namespace Sales.Shared.Migrations
                     b.Navigation("State");
                 });
 
+            modelBuilder.Entity("Sales.Shared.Entities.ProductCategory", b =>
+                {
+                    b.HasOne("Sales.Shared.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sales.Shared.Entities.Product", "Product")
+                        .WithMany("ProductCategories")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Sales.Shared.Entities.ProductImage", b =>
+                {
+                    b.HasOne("Sales.Shared.Entities.Product", "Product")
+                        .WithMany("ProductImages")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Sales.Shared.Entities.Sale", b =>
+                {
+                    b.HasOne("Sales.Shared.Entities.User", "User")
+                        .WithMany("Sales")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Sales.Shared.Entities.SaleDetail", b =>
+                {
+                    b.HasOne("Sales.Shared.Entities.Product", "Product")
+                        .WithMany("SaleDetails")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sales.Shared.Entities.Sale", "Sale")
+                        .WithMany("SaleDetails")
+                        .HasForeignKey("SaleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Sale");
+                });
+
             modelBuilder.Entity("Sales.Shared.Entities.State", b =>
                 {
                     b.HasOne("Sales.Shared.Entities.Country", "Country")
@@ -421,6 +655,27 @@ namespace Sales.Shared.Migrations
                         .IsRequired();
 
                     b.Navigation("Country");
+                });
+
+            modelBuilder.Entity("Sales.Shared.Entities.TemporalSale", b =>
+                {
+                    b.HasOne("Sales.Shared.Entities.Product", "Product")
+                        .WithMany("TemporalSales")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sales.Shared.Entities.TemporalSale", null)
+                        .WithMany("TemporalSales")
+                        .HasForeignKey("TemporalSaleId");
+
+                    b.HasOne("Sales.Shared.Entities.User", "User")
+                        .WithMany("TemporalSales")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Sales.Shared.Entities.User", b =>
@@ -444,9 +699,37 @@ namespace Sales.Shared.Migrations
                     b.Navigation("States");
                 });
 
+            modelBuilder.Entity("Sales.Shared.Entities.Product", b =>
+                {
+                    b.Navigation("ProductCategories");
+
+                    b.Navigation("ProductImages");
+
+                    b.Navigation("SaleDetails");
+
+                    b.Navigation("TemporalSales");
+                });
+
+            modelBuilder.Entity("Sales.Shared.Entities.Sale", b =>
+                {
+                    b.Navigation("SaleDetails");
+                });
+
             modelBuilder.Entity("Sales.Shared.Entities.State", b =>
                 {
                     b.Navigation("Cities");
+                });
+
+            modelBuilder.Entity("Sales.Shared.Entities.TemporalSale", b =>
+                {
+                    b.Navigation("TemporalSales");
+                });
+
+            modelBuilder.Entity("Sales.Shared.Entities.User", b =>
+                {
+                    b.Navigation("Sales");
+
+                    b.Navigation("TemporalSales");
                 });
 #pragma warning restore 612, 618
         }

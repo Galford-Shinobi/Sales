@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sales.API.DataSeeding;
 using Sales.API.Helpers.platform;
@@ -14,9 +14,11 @@ using Sales.Shared.Entities;
 using System.Text;
 using Microsoft.OpenApi.Models;
 
+
+[assembly: ApiConventionType(typeof(DefaultApiConventions))]
 var builder = WebApplication.CreateBuilder(args);
 
-//A�adimos cache
+//Añadimos cache
 builder.Services.AddResponseCaching();
 // Add services to the container.
 
@@ -24,7 +26,7 @@ builder.Services.AddResponseCaching();
 // Add services to the container.
 builder.Services.AddControllers(opcion =>
 {
-    //Cache profile. Un cache global y as� no tener que ponerlo en todas partes
+    //Cache profile. Un cache global y así no tener que ponerlo en todas partes
     opcion.CacheProfiles.Add("PorDefecto20Segundos", new CacheProfile() { Duration = 30 });
 }).AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
@@ -34,7 +36,23 @@ builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sales API", Version = "v1" });
+    //c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sales API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Sales API",
+        Version = "v1",
+        Description = "This is a web api to work with the Shopping Cart.",
+        Contact = new OpenApiContact
+        {
+            Email = "dracomasterorochi@outlook.com",
+            Name = "Draco Master Orochi(ラコマスターオロチ)",
+            Url = new Uri("https://gavilan.blog")
+        },
+        License = new OpenApiLicense
+        {
+            Name = "MIT"
+        }
+    });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = @"JWT Authorization header using the Bearer scheme. <br /> <br />
@@ -77,6 +95,7 @@ builder.Services.AddApplication(builder.Configuration);
 
 builder.Services.AddScoped<IFileStorage, FileStorage>();
 builder.Services.AddScoped<IMailHelper, MailHelper>();
+builder.Services.AddScoped<IOrdersHelper, OrdersHelper>();
 
 builder.Services.AddScoped<IFireBaseService, FireBaseService>();
 

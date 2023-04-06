@@ -36,7 +36,7 @@ else
                                 <ValidationMessage For="@(() => SaleDTO.Remarks)" />
                             </div>
                         </div>
-                        <button class="btn btn-ouline-primary mb-3" type="submit"><i class="oi oi-check" /> Confirmar Pedido</button>
+                        <button class="btn btn-outline-primary mb-3" type="submit"><i class="oi oi-check" /> Confirmar Pedido</button>
                     </EditForm>
                     <table class="table table-striped">
                         <thead>
@@ -118,9 +118,31 @@ else
         }
     }
 
-    private void ConfirmOrderAsync()
+    private async Task ConfirmOrderAsync()
     {
-        //TODO: Pending to implement
+        var result = await sweetAlertService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = "¿Esta seguro que quieres confirmar el pedido?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        var confirm = string.IsNullOrEmpty(result.Value);
+        if (confirm)
+        {
+            return;
+        }
+
+        var httpResponse = await repository.Post("/api/sales", SaleDTO);
+        if (httpResponse.Error)
+        {
+            var message = await httpResponse.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+
+        navigationManager.NavigateTo("/Orders/SaleConfirmed");
     }
 
     private async Task Delete(int temporalSaleId)

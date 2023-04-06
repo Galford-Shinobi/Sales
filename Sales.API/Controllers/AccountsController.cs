@@ -2,10 +2,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using Sales.API.Helpers;
 using Sales.API.Helpers.platform;
+using Sales.Shared.DataBase;
 using Sales.Shared.DTOs;
 using Sales.Shared.Entities;
 using Sales.Shared.Responses;
@@ -26,16 +28,18 @@ namespace Sales.API.Controllers
         private readonly IFileStorage _fileStorage;
         private readonly IMailHelper _mailHelper;
         private readonly IFireBaseService _fireBaseService;
+        private readonly SalesDbContext _salesDbContext;
         private readonly string _container;
 
 
-        public AccountsController(IUserHelper userHelper, IConfiguration configuration, IFileStorage fileStorage, IMailHelper mailHelper, IFireBaseService fireBaseService)
+        public AccountsController(IUserHelper userHelper, IConfiguration configuration, IFileStorage fileStorage, IMailHelper mailHelper, IFireBaseService fireBaseService, SalesDbContext salesDbContext)
         {
             _userHelper = userHelper;
             _configuration = configuration;
             _fileStorage = fileStorage;
             _mailHelper = mailHelper;
             _fireBaseService = fireBaseService;
+            _salesDbContext = salesDbContext;
             _container = "users";
         }
 
@@ -234,14 +238,13 @@ namespace Sales.API.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("GetUser")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult> Get()
+        public async Task<ActionResult> GetUser()
         {
             return Ok(await _userHelper.GetUserAsync(User.Identity!.Name!));
         }
@@ -365,6 +368,43 @@ namespace Sales.API.Controllers
 
             return NoContent();
         }
-       
+
+
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> Get([FromQuery] PaginationDTO pagination)
+        {
+            var queryable = _salesDbContext.Users
+            .Include(u => u.City)
+            .AsQueryable();
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+            {
+                queryable = queryable.Where(x => x.FirstName.ToLower().Contains(pagination.Filter.ToLower()) ||
+                x.LastName.ToLower().Contains(pagination.Filter.ToLower()));
+            }
+            return Ok(await queryable
+            .OrderBy(x => x.FirstName)
+            .ThenBy(x => x.LastName)
+            .Paginate(pagination)
+            .ToListAsync());
+        }
+
+        [HttpGet("totalPages")]
+        public async Task<ActionResult> GetPages([FromQuery] PaginationDTO pagination)
+        {
+            var queryable = _salesDbContext.Users.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+            {
+                queryable = queryable.Where(x => x.FullName.ToLower().Contains(pagination.Filter.ToLower()));
+            }
+            double count = await queryable.CountAsync();
+            double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
+            return Ok(totalPages);
+        }
+
     }
 }
