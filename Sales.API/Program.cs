@@ -27,7 +27,7 @@ builder.Services.AddResponseCaching();
 builder.Services.AddControllers(opcion =>
 {
     //Cache profile. Un cache global y así no tener que ponerlo en todas partes
-    opcion.CacheProfiles.Add("PorDefecto20Segundos", new CacheProfile() { Duration = 30 });
+    opcion.CacheProfiles.Add("PorDefecto20Segundos", new CacheProfile() { Duration = 10 });
 }).AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

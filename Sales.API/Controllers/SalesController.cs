@@ -73,6 +73,34 @@ namespace Sales.API.Controllers
                 .ToListAsync());
         }
 
+
+        [HttpGet("{id:int}")]
+        [ResponseCache(CacheProfileName = "PorDefecto20Segundos")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> Get(int id)
+        {
+            var sale = await _context.Sales
+                .Include(s => s.User!)
+                .ThenInclude(u => u.City!)
+                .ThenInclude(c => c.State!)
+                .ThenInclude(s => s.Country)
+                .Include(s => s.SaleDetails!)
+                .ThenInclude(sd => sd.Product)
+                .ThenInclude(p => p.ProductImages)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (sale == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(sale);
+        }
+
+
         [HttpGet("totalPages")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -140,7 +168,7 @@ namespace Sales.API.Controllers
                 var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == saleDetail.ProductId);
                 if (product != null)
                 {
-                    product.Stock -= saleDetail.Quantity;
+                    product.Stock += saleDetail.Quantity;
                 }
             }
             await _context.SaveChangesAsync();
