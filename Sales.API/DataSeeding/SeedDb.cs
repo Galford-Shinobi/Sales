@@ -7,6 +7,7 @@ using Sales.Shared.DataBase;
 using Sales.Shared.Entities;
 using Sales.Shared.Enums;
 using Sales.Shared.Responses;
+using System.Runtime.InteropServices;
 
 namespace Sales.API.DataSeeding
 {
@@ -122,7 +123,16 @@ namespace Sales.API.DataSeeding
 
             foreach (string? image in images)
             {
-                var filePath = $"{Environment.CurrentDirectory}\\Images\\products\\{image}";
+                string filePath;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    filePath = $"{Environment.CurrentDirectory}\\Images\\products\\{image}";
+                }
+                else
+                {
+                    filePath = $"{Environment.CurrentDirectory}/Images/products/{image}";
+                }
+
                 var fileBytes = File.ReadAllBytes(filePath);
                 var imagePath = await _fileStorage.SaveFileAsync(fileBytes, "jpg", "products");
 
@@ -157,8 +167,16 @@ namespace Sales.API.DataSeeding
                     {
                         city = await _context.Cities.FirstOrDefaultAsync();
                     }
-                    var filePath = $"{Environment.CurrentDirectory}\\Images\\users\\{image}";
-                    var fileBytes = File.ReadAllBytes(filePath);
+                string filePath;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    filePath = $"{Environment.CurrentDirectory}\\Images\\users\\{image}";
+                }
+                else
+                {
+                    filePath = $"{Environment.CurrentDirectory}/Images/users/{image}";
+                }
+                var fileBytes = File.ReadAllBytes(filePath);
 
                     string nombre_en_codigo = Guid.NewGuid().ToString("N");
                     string extension = ".png"; //Path.GetExtension();

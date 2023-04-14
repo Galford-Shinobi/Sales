@@ -137,15 +137,19 @@
     private List<City>? cities;
     private string? imageUrl;
 
-    private void ImageSelected(string imagenBase64)
-    {
-        userDTO.Photo = imagenBase64;
-        imageUrl = null;
-    }
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public bool IsAdmin { get; set; }
 
     protected async override Task OnInitializedAsync()
     {
         await LoadCountriesAsync();
+    }
+
+    private void ImageSelected(string imagenBase64)
+    {
+        userDTO.Photo = imagenBase64;
+        imageUrl = null;
     }
 
     private async Task LoadCountriesAsync()
@@ -161,6 +165,12 @@
         countries = responseHttp.Response;
     }
 
+    private async Task CountryChangedAsync(ChangeEventArgs e)
+    {
+        var selectedCountry = Convert.ToInt32(e.Value!);
+        await LoadStatesAsyn(selectedCountry);
+    }
+
     private async Task LoadStatesAsyn(int countryId)
     {
         var responseHttp = await repository.Get<List<State>>($"/api/states/combo/{countryId}");
@@ -172,6 +182,12 @@
         }
 
         states = responseHttp.Response;
+    }
+
+    private async Task StateChangedAsync(ChangeEventArgs e)
+    {
+        var selectedState = Convert.ToInt32(e.Value!);
+        await LoadCitiesAsyn(selectedState);
     }
 
     private async Task LoadCitiesAsyn(int stateId)
@@ -187,22 +203,19 @@
         cities = responseHttp.Response;
     }
 
-    private async Task CountryChangedAsync(ChangeEventArgs e)
-    {
-        var selectedCountry = Convert.ToInt32(e.Value!);
-        await LoadStatesAsyn(selectedCountry);
-    }
-
-    private async Task StateChangedAsync(ChangeEventArgs e)
-    {
-        var selectedState = Convert.ToInt32(e.Value!);
-        await LoadCitiesAsyn(selectedState);
-    }
-
     private async Task CreteUserAsync()
     {
         userDTO.UserName = userDTO.Email;
-        userDTO.UserType = UserType.User;
+
+        if (IsAdmin)
+        {
+            userDTO.UserType = UserType.Admin;
+        }
+        else
+        {
+            userDTO.UserType = UserType.User;
+        }
+
         var responseHttp = await repository.Post<UserDTO>("/api/accounts/CreateUser", userDTO);
         if (responseHttp.Error)
         {
