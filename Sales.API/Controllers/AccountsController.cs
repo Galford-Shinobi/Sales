@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using Sales.API.Helpers;
 using Sales.API.Helpers.platform;
@@ -11,11 +10,9 @@ using Sales.Shared.DataBase;
 using Sales.Shared.DTOs;
 using Sales.Shared.Entities;
 using Sales.Shared.Responses;
-using Sales.Shared.ViewsModels;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Sales.API.Controllers
 {
@@ -301,7 +298,7 @@ namespace Sales.API.Controllers
                 expires: expiration,
                 signingCredentials: credentials);
 
-            var UserResp = new UserResponse { Id =  user.Id, Document = user.Document, FirstName = user.FirstName,LastName = user.LastName, Email = user.Email };
+            var UserResp = new UserResponse { Id = user.Id, Document = user.Document, FirstName = user.FirstName, LastName = user.LastName, Email = user.Email };
 
             return new TokenDTO
             {
@@ -391,6 +388,27 @@ namespace Sales.API.Controllers
             .ThenBy(x => x.LastName)
             .Paginate(pagination)
             .ToListAsync());
+        }
+
+        [HttpGet("all")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> GetAll([FromQuery] PaginationDTO pagination)
+        {
+            var queryable = _salesDbContext.Users
+                .Include(u => u.City)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+            {
+                queryable = queryable.Where(x => x.FirstName.ToLower().Contains(pagination.Filter.ToLower()) ||
+                                                 x.LastName.ToLower().Contains(pagination.Filter.ToLower()));
+            }
+
+            return Ok(await queryable
+                .OrderBy(x => x.FirstName)
+                .ThenBy(x => x.LastName)
+                .Paginate(pagination)
+                .ToListAsync());
         }
 
         [HttpGet("totalPages")]
