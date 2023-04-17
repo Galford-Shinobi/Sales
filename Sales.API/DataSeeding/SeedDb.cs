@@ -168,13 +168,17 @@ namespace Sales.API.DataSeeding
                         city = await _context.Cities.FirstOrDefaultAsync();
                     }
                 string filePath;
+                Stream stream;
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     filePath = $"{Environment.CurrentDirectory}\\Images\\users\\{image}";
+
+                    stream = File.Open($"{Environment.CurrentDirectory}\\Images\\users\\{image}", FileMode.Open);
                 }
                 else
                 {
                     filePath = $"{Environment.CurrentDirectory}/Images/users/{image}";
+                    stream = File.Open($"{Environment.CurrentDirectory}/Images/users/{image}", FileMode.Open);
                 }
                 var fileBytes = File.ReadAllBytes(filePath);
 
@@ -184,7 +188,6 @@ namespace Sales.API.DataSeeding
 
                     var imagePath = await _fileStorage.SaveFileAsync(fileBytes, "jpg", "users");
 
-                    var stream = File.Open($"{Environment.CurrentDirectory}\\Images\\users\\{image}", FileMode.Open);
 
                     //var fileFromBase64ToStream = FirebaseStorageService.ConvertBase64ToStream(stream.ToString()!);
                     //var fileStream = fileFromBase64ToStream.ReadAsStream();
